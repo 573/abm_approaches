@@ -206,7 +206,7 @@ is defined:
 <span class='hs-varop'>&gt;</span>   <span class='hs-varid'>definePerson</span> <span class='hs-varid'>p</span> <span class='hs-varid'>ps</span> <span class='hs-varid'>potentialAdopters</span> <span class='hs-varid'>adopters</span>
 </pre>
 "Initiating agent and selecting another downmost active state" (state machine
-approach to agents, see the ABM explanation in David Sorokin's paper - link at top of this page),
+approach to agents, see the ABM explanation in [David Sorokin's paper](https://github.com/dsorokin/aivika/blob/aivika-0.1/doc/aivika.pdf?raw=true)),
 because its a product diffusion model, activating the
 `personPotentialAdopter` state of the person always first:
 
@@ -257,7 +257,7 @@ particular event queue reference (`potentialAdopters`, `adopters`)
 <span class='hs-varop'>&gt;</span>                  <span class='hs-varid'>i2</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>readRef</span> <span class='hs-varid'>adopters</span>
 <span class='hs-varop'>&gt;</span>                  <span class='hs-varid'>return</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>i1</span><span class='hs-layout'>,</span> <span class='hs-varid'>i2</span><span class='hs-keyglyph'>]</span>
 </pre>
-David sent me the following comment: Also I think that it will be useful to show the results for this task lazily. It is possible with help of the `runDynamicsIO` function. It is especially useful if the number of agents is great. We can see how the performance is noticeably decreases when many agents become adopters.
+David sent me the following comment and additional function: "Also I think that it will be useful to show the results for this task lazily. It is possible with help of the `runDynamicsIO` function. It is especially useful if the number of agents is great. We can see how the performance is noticeably decreases when many agents become adopters."
 
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-comment'>-- | Show the simulation results lazily, one by one.</span>
 <span class='hs-varop'>&gt;</span> <span class='hs-comment'>-- in main change: do xs &lt;- runDynamics model specs</span>

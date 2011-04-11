@@ -197,7 +197,7 @@ is defined:
 >   definePerson p ps potentialAdopters adopters
 
 "Initiating agent and selecting another downmost active state" (state machine
-approach to agents, see the ABM explanation in David Sorokin's paper - link at top of this page),
+approach to agents, see the ABM explanation in [David Sorokin's paper](https://github.com/dsorokin/aivika/blob/aivika-0.1/doc/aivika.pdf?raw=true)),
 because its a product diffusion model, activating the
 `personPotentialAdopter` state of the person always first:
 
@@ -248,7 +248,7 @@ particular event queue reference (`potentialAdopters`, `adopters`)
 >                  i2 <- readRef adopters
 >                  return [i1, i2]
 
-David sent me the following comment: Also I think that it will be useful to show the results for this task lazily. It is possible with help of the `runDynamicsIO` function. It is especially useful if the number of agents is great. We can see how the performance is noticeably decreases when many agents become adopters.
+David sent me the following comment and additional function: "Also I think that it will be useful to show the results for this task lazily. It is possible with help of the `runDynamicsIO` function. It is especially useful if the number of agents is great. We can see how the performance is noticeably decreases when many agents become adopters."
 
 > -- | Show the simulation results lazily, one by one.
 > -- in main change: do xs <- runDynamics model specs
