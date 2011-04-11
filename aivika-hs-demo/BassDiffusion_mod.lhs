@@ -13,7 +13,7 @@ adopt each time period."
 
 The source of this implementation is
 [David Sorokin's work](http://hackage.haskell.org/package/aivika-0.1).
-ou may find David Sorokin's original work at <https://github.com/dsorokin/aivika>
+You will find David Sorokin's original work at <https://github.com/dsorokin/aivika>
 
 Commented it to better see the flow of implementation and the
 approach of ABM taken.
@@ -99,7 +99,7 @@ Create 500 (`n = 500`, given above) persons (next see `createPerson`):
 >   do stateActivation (personPotentialAdopter p) $
 
 ... `personPotentialAdopter` state of the agent `p` can be activated with the help of this...
-How? Increase number of agents having `personPotentialAdopter` state
+How? Increase number of agents having `personPotentialAdopter` state. State activation is executed at time of its call as part of this monadic computation.
 
 >        do modifyRef' potentialAdopters $ \a -> a + 1
 
@@ -111,7 +111,7 @@ first compute a time period in which the added timeout can be actuated
 >               st' = personAdopter p
 
 The handler (timeout) is given (as arguments) the state (`personPotentialAdopter`) it is assigned
-to, the time period in which it can be actuated - if `personPotentialAdopter` (the state)
+to, the time period in which it can be actuated (the timeout is delayed - being stored in the event queue) - if `personPotentialAdopter` (the state)
 will remain active and the third argument defines the corresponded computation
 (which literally is "activate the `personAdopter` state")
 
@@ -124,14 +124,14 @@ If this handler is still actuated it happens only once as opposed to timer,
 ... `personAdopter` state of the agent `p` can be activated with the help of this...
 How? Increase number of agents having `personAdopter` state, in case of success
 (is what means "monadic" in this case of a computation) of the overall subsequent computation,
-by updating the event queue ref.
+by updating the event queue ref. State activation is executed at time of its call as part of this monadic computation.
 
 >        do modifyRef' adopters  $ \a -> a + 1
 
 In this monadic computation add a timer that works while the state is active,
 "making the agent alive", the timer is assigned to the `personAdopter` state,
 can be actuated within time period `t` and has the corresponded compuation defined
-in the nested `do`... (next see *+)
+in the nested `do`... (next see *+) - timer is delayed in other terms - being stored in the event queue
 
 Will periodically repeat while the (`personAdopter`) state remains active.
 
@@ -247,6 +247,20 @@ particular event queue reference (`potentialAdopters`, `adopters`)
 >      return $ do i1 <- readRef potentialAdopters
 >                  i2 <- readRef adopters
 >                  return [i1, i2]
+
+David sent me the following comment: Also I think that it will be useful to show the results for this task lazily. It is possible with help of the `runDynamicsIO` function. It is especially useful if the number of agents is great. We can see how the performance is noticeably decreases when many agents become adopters.
+
+> -- | Show the simulation results lazily, one by one.
+> -- in main change: do xs <- runDynamics model specs
+> -- to            : do xs <- printDynamics model specs
+> printDynamics :: (Show a) => Dynamics (Dynamics a) -> Specs -> IO ()
+> printDynamics m specs =
+>   do xs <- runDynamicsIO m specs
+>      loop xs
+>        where
+>          loop [] = return ()
+>          loop (x : xs) = do { a <- x; print a; loop xs }
+
 
 > main =
 
