@@ -13,12 +13,12 @@ adopt each time period."
 
 The source of this implementation is
 [David Sorokin's work](http://hackage.haskell.org/package/aivika-0.1).
-ou may find his original work at https://github.com/dsorokin/aivika
+ou may find David Sorokin's original work at <https://github.com/dsorokin/aivika>
 
 Commented it to better see the flow of implementation and the
 approach of ABM taken.
 
-If you want to read the comments, begin with the "main" function.
+If you want to read the comments, begin with the `main` function.
 To try the simulation simply `:load` this file in ghci and run `main`.
 
 > import Random
@@ -28,7 +28,9 @@ To try the simulation simply `:load` this file in ghci and run `main`.
 
 > import Simulation.Aivika.Dynamics
 
-> n = 500    -- the number of agents
+The number of agents `n`:
+
+> n = 500
 
 > advertisingEffectiveness = 0.011
 > contactRate = 100.0
@@ -83,7 +85,7 @@ Given event queue, returning array:
 > createPersons :: DynamicsQueue -> Dynamics (Array Int Person)
 > createPersons q =
 
-Create 500 (n = 500, given above) persons (next see createPerson):
+Create 500 (`n = 500`, given above) persons (next see `createPerson`):
 
 >   do list <- forM [1 .. n] $ \i ->
 >        do p <- createPerson q
@@ -96,8 +98,8 @@ Create 500 (n = 500, given above) persons (next see createPerson):
 > definePerson p ps potentialAdopters adopters =
 >   do stateActivation (personPotentialAdopter p) $
 
-... personPotentialAdopter state of the agent p can be activated with the help of this...
-How? Increase number of agents having personPotentialAdopter state
+... `personPotentialAdopter` state of the agent `p` can be activated with the help of this...
+How? Increase number of agents having `personPotentialAdopter` state
 
 >        do modifyRef' potentialAdopters $ \a -> a + 1
 
@@ -108,10 +110,10 @@ first compute a time period in which the added timeout can be actuated
 >           let st  = personPotentialAdopter p
 >               st' = personAdopter p
 
-The handler (timeout) is given (as arguments) the state (personPotentialAdopter) it is assigned
-to, the time period in which it can be actuated - if personPotentialAdopter (the state)
+The handler (timeout) is given (as arguments) the state (`personPotentialAdopter`) it is assigned
+to, the time period in which it can be actuated - if `personPotentialAdopter` (the state)
 will remain active and the third argument defines the corresponded computation
-(which literally is "activate the personAdopter state")
+(which literally is "activate the `personAdopter` state")
 
 If this handler is still actuated it happens only once as opposed to timer,
 ... does making sense as the transition to adopter is a one-step.
@@ -119,45 +121,45 @@ If this handler is still actuated it happens only once as opposed to timer,
 >           addTimeout st t $ activateState st'
 >      stateActivation (personAdopter p) $ 
 
-... personAdopter state of the agent p can be activated with the help of this...
-How? Increase number of agents having personAdopter state, in case of success
+... `personAdopter` state of the agent `p` can be activated with the help of this...
+How? Increase number of agents having `personAdopter` state, in case of success
 (is what means "monadic" in this case of a computation) of the overall subsequent computation,
 by updating the event queue ref.
 
 >        do modifyRef' adopters  $ \a -> a + 1
 
 In this monadic computation add a timer that works while the state is active,
-"making the agent alive", the timer is assigned to the personAdopter state,
-can be actuated within time period t and has the corresponded compuation defined
-in the nested do... (next see *+)
+"making the agent alive", the timer is assigned to the `personAdopter` state,
+can be actuated within time period `t` and has the corresponded compuation defined
+in the nested `do`... (next see *+)
 
-Will periodically repeat while the (personAdopter) state remains active.
+Will periodically repeat while the (`personAdopter`) state remains active.
 
 >           let t = liftIO $ exprnd contactRate    -- many times!
 >           addTimerD (personAdopter p) t $
 
-i is the number of any one of 500 (amount of agents n, defined above) persons:
+`i` is the number of any one of 500 (amount of agents `n`, defined above) persons:
 
 >             do i <- liftIO $ getStdRandom $ randomR (1, n)
 
 *+ the compuation corresponded to the timer handler.
-Take the ith person number from the array:
+Take the `i`th person number from the array:
 
 >                let p' = ps ! i
 
-Determine the agent's (belonging to the drawn person number) "downmost active" state (as st):
+Determine the agent's (belonging to the drawn person number) "downmost active" state (as `st`):
 
 >                st <- agentState (personAgent p')
 
-When the "downmost active" state is personPotentialAdopter...
+When the "downmost active" state is `personPotentialAdopter`...
 
 >                when (st == Just (personPotentialAdopter p')) $
 
-... determine if/or not this agent should belong the adopters
-this is a bool (named b) now, so there is a fifty-fifty chance...
+... determine if/or not this agent should belong the `adopters`
+this is a bool (named `b`) now, so there is a fifty-fifty chance...
 ... in other words an agent being currently a potential adopter has a
-fifty-fifty chance now to belong to the adopters (or adopters fraction of the
-500 persons) by state activation in a moment... AARGH yet too complicated to even spell
+fifty-fifty chance now to belong to the `adopters` (or adopters fraction of the
+500 consumers) by state activation in a moment... AARGH yet too complicated to even spell
 
 >                  do b <- liftIO $ boolrnd adoptionFraction
 
@@ -166,23 +168,23 @@ event queue won't be updated if not...
 >                     when b $ activateState (personAdopter p')
 >      stateDeactivation (personPotentialAdopter p) $
 
-... personPotentialAdopter state of the agent p can be deactivated with the help of this...
-How? Simply decrease number of agents having personPotentialAdopter state,
+... `personPotentialAdopter` state of the agent `p` can be deactivated with the help of this...
+How? Simply decrease number of agents having `personPotentialAdopter` state,
 updating the event queue ref. Effect: All handlers (timer, timeout) are outdated and will be ignored
 but may be assigned new ones at time of next state activation
 
 >       modifyRef' potentialAdopters $ \a -> a - 1
 >      stateDeactivation (personAdopter p) $
 
-... personAdopter state of the agent p can be deactivated with the help of this...
-How? Simply decrease number of agents having personAdopter state, updating the event queue
+... `personAdopter` state of the agent `p` can be deactivated with the help of this...
+How? Simply decrease number of agents having `personAdopter` state, updating the event queue
 ref. Effect: All handlers (timer, timeout) are outdated and will be ignored
 but may be assigned new ones at time of next state activation
 
 >       modifyRef' adopters $ \a -> a - 1
 
 Given the persons array and the event queue refs to potential and real adopters,
-prepare the Dynamics computation, next see definePerson, where the real Dynamics computation,
+prepare the `Dynamics` computation, next see `definePerson`, where the real `Dynamics` computation,
 composed of activation and deactivation computations as well as timer and timeout handlers
 is defined:
 
@@ -195,9 +197,9 @@ is defined:
 >   definePerson p ps potentialAdopters adopters
 
 "Initiating agent and selecting another downmost active state" (state machine
-approach to agents, see abm explanation in the paper),
-because its our product diffusion model, activating the
-personPotentialAdopter state of the person prior:
+approach to agents, see the ABM explanation in David Sorokin's paper - link at top of this page),
+because its a product diffusion model, activating the
+`personPotentialAdopter` state of the person always first:
 
 > activatePerson :: Person -> Dynamics ()
 > activatePerson p = activateState (personPotentialAdopter p)
@@ -221,15 +223,15 @@ An agent (representing consumers) can be in two states,
 
 >      adopters <- newRef q 0          -- empty event queue
 
-To create the person, we need the event queue (q).
-We place all persons in the array (ps, next see createPersons)
+To create the person, we need the event queue (`q`).
+We place all persons in the array (`ps`, next see `createPersons`)
 We need this array to have an access to random agents at time when the
 specified adopter tries to convert somebody to be an adopter too
 
 >      ps <- createPersons q
 
 Create the agents/objects and define their activation and deactivation
-computations (next see definePersons)
+computations (next see `definePersons`)
 
 >      definePersons ps potentialAdopters adopters
 
@@ -240,7 +242,7 @@ preparation all, executed only when the event queue reference is read
 
 Return pair (per simulation step?!!) expressing amount of potential
 adopters remaining and adopters already existent, reading each entry from the
-particular event queue reference (potentialAdopters, adopters)
+particular event queue reference (`potentialAdopters`, `adopters`)
 
 >      return $ do i1 <- readRef potentialAdopters
 >                  i2 <- readRef adopters
@@ -248,12 +250,12 @@ particular event queue reference (potentialAdopters, adopters)
 
 > main =
 
-Start here (specs defined above, next see model).
+Start here (specs defined above, next see `model`).
 Running the model means - "creating a simulation and then running it
 in all integration time points using the specified simulation steps"
 - in aivikas terms
 
-runDynamics :: Dynamics (Dynamics a) -> Specs -> IO [a]
+(`runDynamics :: Dynamics (Dynamics a) -> Specs -> IO [a]`)
 
 >   do xs <- runDynamics model specs
 

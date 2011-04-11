@@ -22,12 +22,12 @@ adopt each time period."
 
 The source of this implementation is
 [David Sorokin's work](http://hackage.haskell.org/package/aivika-0.1).
-ou may find his original work at https://github.com/dsorokin/aivika
+ou may find David Sorokin's original work at <https://github.com/dsorokin/aivika>
 
 Commented it to better see the flow of implementation and the
 approach of ABM taken.
 
-If you want to read the comments, begin with the "main" function.
+If you want to read the comments, begin with the `main` function.
 To try the simulation simply `:load` this file in ghci and run `main`.
 
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-keyword'>import</span> <span class='hs-conid'>Random</span>
@@ -37,7 +37,9 @@ To try the simulation simply `:load` this file in ghci and run `main`.
 </pre>
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-keyword'>import</span> <span class='hs-conid'>Simulation</span><span class='hs-varop'>.</span><span class='hs-conid'>Aivika</span><span class='hs-varop'>.</span><span class='hs-conid'>Dynamics</span>
 </pre>
-<pre><span class='hs-varop'>&gt;</span> <span class='hs-definition'>n</span> <span class='hs-keyglyph'>=</span> <span class='hs-num'>500</span>    <span class='hs-comment'>-- the number of agents</span>
+The number of agents `n`:
+
+<pre><span class='hs-varop'>&gt;</span> <span class='hs-definition'>n</span> <span class='hs-keyglyph'>=</span> <span class='hs-num'>500</span>
 </pre>
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-definition'>advertisingEffectiveness</span> <span class='hs-keyglyph'>=</span> <span class='hs-num'>0.011</span>
 <span class='hs-varop'>&gt;</span> <span class='hs-definition'>contactRate</span> <span class='hs-keyglyph'>=</span> <span class='hs-num'>100.0</span>
@@ -92,7 +94,7 @@ Given event queue, returning array:
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-definition'>createPersons</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>DynamicsQueue</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Dynamics</span> <span class='hs-layout'>(</span><span class='hs-conid'>Array</span> <span class='hs-conid'>Int</span> <span class='hs-conid'>Person</span><span class='hs-layout'>)</span>
 <span class='hs-varop'>&gt;</span> <span class='hs-definition'>createPersons</span> <span class='hs-varid'>q</span> <span class='hs-keyglyph'>=</span>
 </pre>
-Create 500 (n = 500, given above) persons (next see createPerson):
+Create 500 (`n = 500`, given above) persons (next see `createPerson`):
 
 <pre><span class='hs-varop'>&gt;</span>   <span class='hs-keyword'>do</span> <span class='hs-varid'>list</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>forM</span> <span class='hs-keyglyph'>[</span><span class='hs-num'>1</span> <span class='hs-keyglyph'>..</span> <span class='hs-varid'>n</span><span class='hs-keyglyph'>]</span> <span class='hs-varop'>$</span> <span class='hs-keyglyph'>\</span><span class='hs-varid'>i</span> <span class='hs-keyglyph'>-&gt;</span>
 <span class='hs-varop'>&gt;</span>        <span class='hs-keyword'>do</span> <span class='hs-varid'>p</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>createPerson</span> <span class='hs-varid'>q</span>
@@ -105,8 +107,8 @@ Create 500 (n = 500, given above) persons (next see createPerson):
 <span class='hs-varop'>&gt;</span> <span class='hs-definition'>definePerson</span> <span class='hs-varid'>p</span> <span class='hs-varid'>ps</span> <span class='hs-varid'>potentialAdopters</span> <span class='hs-varid'>adopters</span> <span class='hs-keyglyph'>=</span>
 <span class='hs-varop'>&gt;</span>   <span class='hs-keyword'>do</span> <span class='hs-varid'>stateActivation</span> <span class='hs-layout'>(</span><span class='hs-varid'>personPotentialAdopter</span> <span class='hs-varid'>p</span><span class='hs-layout'>)</span> <span class='hs-varop'>$</span>
 </pre>
-... personPotentialAdopter state of the agent p can be activated with the help of this...
-How? Increase number of agents having personPotentialAdopter state
+... `personPotentialAdopter` state of the agent `p` can be activated with the help of this...
+How? Increase number of agents having `personPotentialAdopter` state
 
 <pre><span class='hs-varop'>&gt;</span>        <span class='hs-keyword'>do</span> <span class='hs-varid'>modifyRef'</span> <span class='hs-varid'>potentialAdopters</span> <span class='hs-varop'>$</span> <span class='hs-keyglyph'>\</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-varop'>+</span> <span class='hs-num'>1</span>
 </pre>
@@ -117,10 +119,10 @@ first compute a time period in which the added timeout can be actuated
 <span class='hs-varop'>&gt;</span>           <span class='hs-keyword'>let</span> <span class='hs-varid'>st</span>  <span class='hs-keyglyph'>=</span> <span class='hs-varid'>personPotentialAdopter</span> <span class='hs-varid'>p</span>
 <span class='hs-varop'>&gt;</span>               <span class='hs-varid'>st'</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>personAdopter</span> <span class='hs-varid'>p</span>
 </pre>
-The handler (timeout) is given (as arguments) the state (personPotentialAdopter) it is assigned
-to, the time period in which it can be actuated - if personPotentialAdopter (the state)
+The handler (timeout) is given (as arguments) the state (`personPotentialAdopter`) it is assigned
+to, the time period in which it can be actuated - if `personPotentialAdopter` (the state)
 will remain active and the third argument defines the corresponded computation
-(which literally is "activate the personAdopter state")
+(which literally is "activate the `personAdopter` state")
 
 If this handler is still actuated it happens only once as opposed to timer,
 ... does making sense as the transition to adopter is a one-step.
@@ -128,45 +130,45 @@ If this handler is still actuated it happens only once as opposed to timer,
 <pre><span class='hs-varop'>&gt;</span>           <span class='hs-varid'>addTimeout</span> <span class='hs-varid'>st</span> <span class='hs-varid'>t</span> <span class='hs-varop'>$</span> <span class='hs-varid'>activateState</span> <span class='hs-varid'>st'</span>
 <span class='hs-varop'>&gt;</span>      <span class='hs-varid'>stateActivation</span> <span class='hs-layout'>(</span><span class='hs-varid'>personAdopter</span> <span class='hs-varid'>p</span><span class='hs-layout'>)</span> <span class='hs-varop'>$</span> 
 </pre>
-... personAdopter state of the agent p can be activated with the help of this...
-How? Increase number of agents having personAdopter state, in case of success
+... `personAdopter` state of the agent `p` can be activated with the help of this...
+How? Increase number of agents having `personAdopter` state, in case of success
 (is what means "monadic" in this case of a computation) of the overall subsequent computation,
 by updating the event queue ref.
 
 <pre><span class='hs-varop'>&gt;</span>        <span class='hs-keyword'>do</span> <span class='hs-varid'>modifyRef'</span> <span class='hs-varid'>adopters</span>  <span class='hs-varop'>$</span> <span class='hs-keyglyph'>\</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-varop'>+</span> <span class='hs-num'>1</span>
 </pre>
 In this monadic computation add a timer that works while the state is active,
-"making the agent alive", the timer is assigned to the personAdopter state,
-can be actuated within time period t and has the corresponded compuation defined
-in the nested do... (next see *+)
+"making the agent alive", the timer is assigned to the `personAdopter` state,
+can be actuated within time period `t` and has the corresponded compuation defined
+in the nested `do`... (next see *+)
 
-Will periodically repeat while the (personAdopter) state remains active.
+Will periodically repeat while the (`personAdopter`) state remains active.
 
 <pre><span class='hs-varop'>&gt;</span>           <span class='hs-keyword'>let</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>liftIO</span> <span class='hs-varop'>$</span> <span class='hs-varid'>exprnd</span> <span class='hs-varid'>contactRate</span>    <span class='hs-comment'>-- many times!</span>
 <span class='hs-varop'>&gt;</span>           <span class='hs-varid'>addTimerD</span> <span class='hs-layout'>(</span><span class='hs-varid'>personAdopter</span> <span class='hs-varid'>p</span><span class='hs-layout'>)</span> <span class='hs-varid'>t</span> <span class='hs-varop'>$</span>
 </pre>
-i is the number of any one of 500 (amount of agents n, defined above) persons:
+`i` is the number of any one of 500 (amount of agents `n`, defined above) persons:
 
 <pre><span class='hs-varop'>&gt;</span>             <span class='hs-keyword'>do</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>liftIO</span> <span class='hs-varop'>$</span> <span class='hs-varid'>getStdRandom</span> <span class='hs-varop'>$</span> <span class='hs-varid'>randomR</span> <span class='hs-layout'>(</span><span class='hs-num'>1</span><span class='hs-layout'>,</span> <span class='hs-varid'>n</span><span class='hs-layout'>)</span>
 </pre>
 *+ the compuation corresponded to the timer handler.
-Take the ith person number from the array:
+Take the `i`th person number from the array:
 
 <pre><span class='hs-varop'>&gt;</span>                <span class='hs-keyword'>let</span> <span class='hs-varid'>p'</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>ps</span> <span class='hs-varop'>!</span> <span class='hs-varid'>i</span>
 </pre>
-Determine the agent's (belonging to the drawn person number) "downmost active" state (as st):
+Determine the agent's (belonging to the drawn person number) "downmost active" state (as `st`):
 
 <pre><span class='hs-varop'>&gt;</span>                <span class='hs-varid'>st</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>agentState</span> <span class='hs-layout'>(</span><span class='hs-varid'>personAgent</span> <span class='hs-varid'>p'</span><span class='hs-layout'>)</span>
 </pre>
-When the "downmost active" state is personPotentialAdopter...
+When the "downmost active" state is `personPotentialAdopter`...
 
 <pre><span class='hs-varop'>&gt;</span>                <span class='hs-varid'>when</span> <span class='hs-layout'>(</span><span class='hs-varid'>st</span> <span class='hs-varop'>==</span> <span class='hs-conid'>Just</span> <span class='hs-layout'>(</span><span class='hs-varid'>personPotentialAdopter</span> <span class='hs-varid'>p'</span><span class='hs-layout'>)</span><span class='hs-layout'>)</span> <span class='hs-varop'>$</span>
 </pre>
-... determine if/or not this agent should belong the adopters
-this is a bool (named b) now, so there is a fifty-fifty chance...
+... determine if/or not this agent should belong the `adopters`
+this is a bool (named `b`) now, so there is a fifty-fifty chance...
 ... in other words an agent being currently a potential adopter has a
-fifty-fifty chance now to belong to the adopters (or adopters fraction of the
-500 persons) by state activation in a moment... AARGH yet too complicated to even spell
+fifty-fifty chance now to belong to the `adopters` (or adopters fraction of the
+500 consumers) by state activation in a moment... AARGH yet too complicated to even spell
 
 <pre><span class='hs-varop'>&gt;</span>                  <span class='hs-keyword'>do</span> <span class='hs-varid'>b</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>liftIO</span> <span class='hs-varop'>$</span> <span class='hs-varid'>boolrnd</span> <span class='hs-varid'>adoptionFraction</span>
 </pre>
@@ -175,23 +177,23 @@ event queue won't be updated if not...
 <pre><span class='hs-varop'>&gt;</span>                     <span class='hs-varid'>when</span> <span class='hs-varid'>b</span> <span class='hs-varop'>$</span> <span class='hs-varid'>activateState</span> <span class='hs-layout'>(</span><span class='hs-varid'>personAdopter</span> <span class='hs-varid'>p'</span><span class='hs-layout'>)</span>
 <span class='hs-varop'>&gt;</span>      <span class='hs-varid'>stateDeactivation</span> <span class='hs-layout'>(</span><span class='hs-varid'>personPotentialAdopter</span> <span class='hs-varid'>p</span><span class='hs-layout'>)</span> <span class='hs-varop'>$</span>
 </pre>
-... personPotentialAdopter state of the agent p can be deactivated with the help of this...
-How? Simply decrease number of agents having personPotentialAdopter state,
+... `personPotentialAdopter` state of the agent `p` can be deactivated with the help of this...
+How? Simply decrease number of agents having `personPotentialAdopter` state,
 updating the event queue ref. Effect: All handlers (timer, timeout) are outdated and will be ignored
 but may be assigned new ones at time of next state activation
 
 <pre><span class='hs-varop'>&gt;</span>       <span class='hs-varid'>modifyRef'</span> <span class='hs-varid'>potentialAdopters</span> <span class='hs-varop'>$</span> <span class='hs-keyglyph'>\</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-comment'>-</span> <span class='hs-num'>1</span>
 <span class='hs-varop'>&gt;</span>      <span class='hs-varid'>stateDeactivation</span> <span class='hs-layout'>(</span><span class='hs-varid'>personAdopter</span> <span class='hs-varid'>p</span><span class='hs-layout'>)</span> <span class='hs-varop'>$</span>
 </pre>
-... personAdopter state of the agent p can be deactivated with the help of this...
-How? Simply decrease number of agents having personAdopter state, updating the event queue
+... `personAdopter` state of the agent `p` can be deactivated with the help of this...
+How? Simply decrease number of agents having `personAdopter` state, updating the event queue
 ref. Effect: All handlers (timer, timeout) are outdated and will be ignored
 but may be assigned new ones at time of next state activation
 
 <pre><span class='hs-varop'>&gt;</span>       <span class='hs-varid'>modifyRef'</span> <span class='hs-varid'>adopters</span> <span class='hs-varop'>$</span> <span class='hs-keyglyph'>\</span><span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-comment'>-</span> <span class='hs-num'>1</span>
 </pre>
 Given the persons array and the event queue refs to potential and real adopters,
-prepare the Dynamics computation, next see definePerson, where the real Dynamics computation,
+prepare the `Dynamics` computation, next see `definePerson`, where the real `Dynamics` computation,
 composed of activation and deactivation computations as well as timer and timeout handlers
 is defined:
 
@@ -204,9 +206,9 @@ is defined:
 <span class='hs-varop'>&gt;</span>   <span class='hs-varid'>definePerson</span> <span class='hs-varid'>p</span> <span class='hs-varid'>ps</span> <span class='hs-varid'>potentialAdopters</span> <span class='hs-varid'>adopters</span>
 </pre>
 "Initiating agent and selecting another downmost active state" (state machine
-approach to agents, see abm explanation in the paper),
-because its our product diffusion model, activating the
-personPotentialAdopter state of the person prior:
+approach to agents, see the ABM explanation in David Sorokin's paper - link at top of this page),
+because its a product diffusion model, activating the
+`personPotentialAdopter` state of the person always first:
 
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-definition'>activatePerson</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Person</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Dynamics</span> <span class='hs-conid'>()</span>
 <span class='hs-varop'>&gt;</span> <span class='hs-definition'>activatePerson</span> <span class='hs-varid'>p</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>activateState</span> <span class='hs-layout'>(</span><span class='hs-varid'>personPotentialAdopter</span> <span class='hs-varid'>p</span><span class='hs-layout'>)</span>
@@ -230,15 +232,15 @@ An agent (representing consumers) can be in two states,
 
 <pre><span class='hs-varop'>&gt;</span>      <span class='hs-varid'>adopters</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>newRef</span> <span class='hs-varid'>q</span> <span class='hs-num'>0</span>          <span class='hs-comment'>-- empty event queue</span>
 </pre>
-To create the person, we need the event queue (q).
-We place all persons in the array (ps, next see createPersons)
+To create the person, we need the event queue (`q`).
+We place all persons in the array (`ps`, next see `createPersons`)
 We need this array to have an access to random agents at time when the
 specified adopter tries to convert somebody to be an adopter too
 
 <pre><span class='hs-varop'>&gt;</span>      <span class='hs-varid'>ps</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>createPersons</span> <span class='hs-varid'>q</span>
 </pre>
 Create the agents/objects and define their activation and deactivation
-computations (next see definePersons)
+computations (next see `definePersons`)
 
 <pre><span class='hs-varop'>&gt;</span>      <span class='hs-varid'>definePersons</span> <span class='hs-varid'>ps</span> <span class='hs-varid'>potentialAdopters</span> <span class='hs-varid'>adopters</span>
 </pre>
@@ -249,7 +251,7 @@ preparation all, executed only when the event queue reference is read
 </pre>
 Return pair (per simulation step?!!) expressing amount of potential
 adopters remaining and adopters already existent, reading each entry from the
-particular event queue reference (potentialAdopters, adopters)
+particular event queue reference (`potentialAdopters`, `adopters`)
 
 <pre><span class='hs-varop'>&gt;</span>      <span class='hs-varid'>return</span> <span class='hs-varop'>$</span> <span class='hs-keyword'>do</span> <span class='hs-varid'>i1</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>readRef</span> <span class='hs-varid'>potentialAdopters</span>
 <span class='hs-varop'>&gt;</span>                  <span class='hs-varid'>i2</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>readRef</span> <span class='hs-varid'>adopters</span>
@@ -257,12 +259,12 @@ particular event queue reference (potentialAdopters, adopters)
 </pre>
 <pre><span class='hs-varop'>&gt;</span> <span class='hs-definition'>main</span> <span class='hs-keyglyph'>=</span>
 </pre>
-Start here (specs defined above, next see model).
+Start here (specs defined above, next see `model`).
 Running the model means - "creating a simulation and then running it
 in all integration time points using the specified simulation steps"
 - in aivikas terms
 
-runDynamics :: Dynamics (Dynamics a) -> Specs -> IO [a]
+(`runDynamics :: Dynamics (Dynamics a) -> Specs -> IO [a]`)
 
 <pre><span class='hs-varop'>&gt;</span>   <span class='hs-keyword'>do</span> <span class='hs-varid'>xs</span> <span class='hs-keyglyph'>&lt;-</span> <span class='hs-varid'>runDynamics</span> <span class='hs-varid'>model</span> <span class='hs-varid'>specs</span>
 </pre>
