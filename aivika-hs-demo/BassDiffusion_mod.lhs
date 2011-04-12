@@ -100,10 +100,10 @@ Create 500 (`n = 500`, given above) persons (next see `createPerson`):
 
 ... `stateActivation` stating that `personPotentialAdopter` state of the agent
 `p` can be activated (meaning the `personPotentialAdopter` state has this
-activation computation, _at time of defining the agent - Point 1_) by
-increasing the number of agents having `personPotentialAdopter` state. So,
-when `personPotentialAdopter` state is activated, the simulation engine calls
-the activation computation and the timeout handler is registered _(Point 2)_.
+activation computation) by increasing the number of agents having
+`personPotentialAdopter` state. So, when `personPotentialAdopter` state is
+activated, the simulation engine calls the activation computation and the
+timeout handler is registered.
 
 >        do modifyRef' potentialAdopters $ \a -> a + 1
 
@@ -120,7 +120,7 @@ be actuated (the timeout is delayed - being stored in the event queue) - if
 `personPotentialAdopter` (the state) will remain active and the third argument
 defines the corresponded computation (which literally is "activate the
 `personAdopter` state"), the latter which is called by the simulation engine
-from the event queue _(Point 3)_.
+from the event queue.
 
 If this handler is still actuated it happens only once as opposed to timer,
 ... does making sense as the transition to adopter is a one-step.
@@ -134,7 +134,7 @@ by increasing the number of agents, having `personAdopter` state, in case of
 success (is what means "monadic" in this case of a computation) of the timer
 handlers associated computation. So, when `personAdopter` state is activated, the
 simulation engine calls the activation computation and the timer handler is
-registered _(Point 2)_ by updating the event queue ref.
+registered by updating the event queue ref.
 
 >        do modifyRef' adopters  $ \a -> a + 1
 
@@ -142,8 +142,7 @@ In this monadic computation add a timer that works while the state is active,
 "making the agent alive", the timer is assigned to the `personAdopter` state,
 can be actuated within time period `t` and has the corresponded computation
 defined in the nested `do`... (next see *+) - timer is delayed in other terms
-- being stored in and called by the simulation engine from the event queue
-_(Point 3)_.
+- being stored in and called by the simulation engine from the event queue.
 
 Will periodically repeat while the (`personAdopter`) state remains active.
 
