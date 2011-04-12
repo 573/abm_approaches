@@ -98,8 +98,12 @@ Create 500 (`n = 500`, given above) persons (next see `createPerson`):
 > definePerson p ps potentialAdopters adopters =
 >   do stateActivation (personPotentialAdopter p) $
 
-... `personPotentialAdopter` state of the agent `p` can be activated with the help of this...
-How? Increase number of agents having `personPotentialAdopter` state. State activation is executed at time of its call as part of this monadic computation.
+... `stateActivation` stating that `personPotentialAdopter` state of the agent
+`p` can be activated (meaning the `personPotentialAdopter` state has this
+activation computation, _at time of defining the agent - Point 1_) by
+increasing the number of agents having `personPotentialAdopter` state. So,
+when `personPotentialAdopter` state is activated, the simulation engine calls
+the activation computation and the timeout handler is registered _(Point 2)_.
 
 >        do modifyRef' potentialAdopters $ \a -> a + 1
 
@@ -110,10 +114,13 @@ first compute a time period in which the added timeout can be actuated
 >           let st  = personPotentialAdopter p
 >               st' = personAdopter p
 
-The handler (timeout) is given (as arguments) the state (`personPotentialAdopter`) it is assigned
-to, the time period in which it can be actuated (the timeout is delayed - being stored in the event queue) - if `personPotentialAdopter` (the state)
-will remain active and the third argument defines the corresponded computation
-(which literally is "activate the `personAdopter` state")
+The handler (timeout) is given (as arguments) the state
+(`personPotentialAdopter`) it is assigned to, the time period in which it can
+be actuated (the timeout is delayed - being stored in the event queue) - if
+`personPotentialAdopter` (the state) will remain active and the third argument
+defines the corresponded computation (which literally is "activate the
+`personAdopter` state"), the latter which is called by the simulation engine
+from the event queue _(Point 3)_.
 
 If this handler is still actuated it happens only once as opposed to timer,
 ... does making sense as the transition to adopter is a one-step.
@@ -121,24 +128,30 @@ If this handler is still actuated it happens only once as opposed to timer,
 >           addTimeout st t $ activateState st'
 >      stateActivation (personAdopter p) $ 
 
-... `personAdopter` state of the agent `p` can be activated with the help of this...
-How? Increase number of agents having `personAdopter` state, in case of success
-(is what means "monadic" in this case of a computation) of the overall subsequent computation,
-by updating the event queue ref. State activation is executed at time of its call as part of this monadic computation.
+... `stateActivation` stating that `personAdopter` state of the agent `p` can be
+activated (meaning the `personAdopter` state has this activation computation)
+by increasing the number of agents, having `personAdopter` state, in case of
+success (is what means "monadic" in this case of a computation) of the timer
+handlers associated computation. So, when `personAdopter` state is activated, the
+simulation engine calls the activation computation and the timer handler is
+registered _(Point 2)_ by updating the event queue ref.
 
 >        do modifyRef' adopters  $ \a -> a + 1
 
 In this monadic computation add a timer that works while the state is active,
 "making the agent alive", the timer is assigned to the `personAdopter` state,
-can be actuated within time period `t` and has the corresponded compuation defined
-in the nested `do`... (next see *+) - timer is delayed in other terms - being stored in the event queue
+can be actuated within time period `t` and has the corresponded computation
+defined in the nested `do`... (next see *+) - timer is delayed in other terms
+- being stored in and called by the simulation engine from the event queue
+_(Point 3)_.
 
 Will periodically repeat while the (`personAdopter`) state remains active.
 
 >           let t = liftIO $ exprnd contactRate    -- many times!
 >           addTimerD (personAdopter p) t $
 
-`i` is the number of any one of 500 (amount of agents `n`, defined above) persons:
+`i` is the number of any one of 500 (amount of agents `n`, defined above)
+persons:
 
 >             do i <- liftIO $ getStdRandom $ randomR (1, n)
 
@@ -147,7 +160,8 @@ Take the `i`th person number from the array:
 
 >                let p' = ps ! i
 
-Determine the agent's (belonging to the drawn person number) "downmost active" state (as `st`):
+Determine the agent's (belonging to the drawn person number) "downmost active"
+state (as `st`):
 
 >                st <- agentState (personAgent p')
 
@@ -158,8 +172,9 @@ When the "downmost active" state is `personPotentialAdopter`...
 ... determine if/or not this agent should belong the `adopters`
 this is a bool (named `b`) now, so there is a fifty-fifty chance...
 ... in other words an agent being currently a potential adopter has a
-fifty-fifty chance now to belong to the `adopters` (or adopters fraction of the
-500 consumers) by state activation in a moment... AARGH yet too complicated to even spell
+fifty-fifty chance now to belong to the `adopters` (or adopters fraction of
+the 500 consumers) by state activation in a moment... AARGH yet too
+complicated to even spell
 
 >                  do b <- liftIO $ boolrnd adoptionFraction
 
@@ -168,25 +183,27 @@ event queue won't be updated if not...
 >                     when b $ activateState (personAdopter p')
 >      stateDeactivation (personPotentialAdopter p) $
 
-... `personPotentialAdopter` state of the agent `p` can be deactivated with the help of this...
-How? Simply decrease number of agents having `personPotentialAdopter` state,
-updating the event queue ref. Effect: All handlers (timer, timeout) are outdated and will be ignored
-but may be assigned new ones at time of next state activation
+... stating that `personPotentialAdopter` state of the agent `p` can be
+deactivated by decreasing the number of agents having `personPotentialAdopter`
+state, updating the event queue ref. and the effect will be: All handlers
+(timer, timeout) are outdated and will be ignored but may be assigned new ones
+at time of next state activation
 
 >       modifyRef' potentialAdopters $ \a -> a - 1
 >      stateDeactivation (personAdopter p) $
 
-... `personAdopter` state of the agent `p` can be deactivated with the help of this...
-How? Simply decrease number of agents having `personAdopter` state, updating the event queue
-ref. Effect: All handlers (timer, timeout) are outdated and will be ignored
-but may be assigned new ones at time of next state activation
+... stating that `personAdopter` state of the agent `p` can be deactivated by
+decreasing the number of agents having `personAdopter` state, updating the
+event queue ref. and the effect will be: All handlers (timer, timeout) are
+outdated and will be ignored but may be assigned new ones at time of next state
+activation
 
 >       modifyRef' adopters $ \a -> a - 1
 
 Given the persons array and the event queue refs to potential and real adopters,
-prepare the `Dynamics` computation, next see `definePerson`, where the real `Dynamics` computation,
-composed of activation and deactivation computations as well as timer and timeout handlers
-is defined:
+prepare the `Dynamics` computation, next see `definePerson`, where the real
+`Dynamics` computation, composed of activation and deactivation computations as
+well as timer and timeout handlers is defined:
 
 > definePersons :: Array Int Person 
 >                 -> DynamicsRef Int 
@@ -248,7 +265,11 @@ particular event queue reference (`potentialAdopters`, `adopters`)
 >                  i2 <- readRef adopters
 >                  return [i1, i2]
 
-David sent me the following comment and additional function: "Also I think that it will be useful to show the results for this task lazily. It is possible with help of the `runDynamicsIO` function. It is especially useful if the number of agents is great. We can see how the performance is noticeably decreases when many agents become adopters."
+David sent me the following comment and additional function: "Also I think
+that it will be useful to show the results for this task lazily. It is
+possible with help of the `runDynamicsIO` function. It is especially useful if
+the number of agents is great. We can see how the performance is noticeably
+decreases when many agents become adopters."
 
 > -- | Show the simulation results lazily, one by one.
 > -- in main change: do xs <- runDynamics model specs
@@ -273,8 +294,8 @@ in all integration time points using the specified simulation steps"
 
 >   do xs <- runDynamics model specs
 
-For the above concrete specification (80 steps in 8 time points) yielding 81 pairs,
-the initial pair included.
+For the above concrete specification (80 steps in 8 time points) yielding 81
+pairs, the initial pair included.
 
 >      print xs
 
